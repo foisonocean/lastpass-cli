@@ -1,0 +1,50 @@
+name: Release
+
+on: [release]
+
+jobs:
+  build-macos:
+
+    runs-on: macOS-10.14
+    
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Dependencies
+        run: |
+          brew update
+          brew install libxml2 cmake pkg-config tree || true
+      - name: Build
+        run: make
+      - name: Test
+        run: make test
+      - name: Make Tarball
+        run: cd build && tar -czf lpass-macos.tar.gz lpass && cd ../
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+            files: build/lpass-macos.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux:
+
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -y libxml2-dev libcurl4-openssl-dev
+      - name: Build
+        run: make
+      - name: Test
+        run: make test
+      - name: Make Tarball
+        run: cd build && tar -czf lpass-linux.tar.gz lpass && cd ../
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+            files: build/lpass-linux.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
